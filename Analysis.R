@@ -151,7 +151,7 @@ apr <-  mutate(apr, trip_id = as.character(trip_id)
 
 #merge all tables into a singular dataset
 
-trips_df <- bind_rows(jan,feb,mar,apr,jun,may,jul,aug,sep,oct)
+trips_df <- bind_rows(may,jun,jul,aug,sep,oct,nov,dec,jan,feb,mar,apr)
 trips_df <- trips_df %>% 
   select(-c(start_lat, start_lng, end_lat, end_lng))
 
@@ -160,16 +160,6 @@ no_of_users <- trips_df %>%
   count(user_type)      #counting number of distinct user types and checking if there are any null or irregular values
 View(no_of_users)
 
-#merge all tables into a singular dataset
-
-trips_df <- bind_rows(jan,feb,mar,apr,jun,may,jul,aug,sep,oct)
-trips_df <- trips_df %>% 
-  select(-c(start_lat, start_lng, end_lat, end_lng))
-
-
-no_of_users <- trips_df %>% 
-  count(user_type)      #counting number of distinct user types and checking if there are any null or irregular values
-View(no_of_users)
 
 #View(trips_df)
 #str(trips_df)
