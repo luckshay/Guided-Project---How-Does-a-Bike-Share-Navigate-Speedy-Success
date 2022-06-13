@@ -174,3 +174,10 @@ summary(v2_trips_df)
 
 str(trips_df)
 summary(trips_df)
+
+
+#PROCESSING OF DATA
+
+trips_df$day_of_week <- format(as.Date(trips_df$start_time), "%A")
+trips_df$ride_length<- difftime(trips_df$end_time, trips_df$start_time, units="mins" )
+
