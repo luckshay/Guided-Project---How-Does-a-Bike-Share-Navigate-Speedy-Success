@@ -4,6 +4,7 @@ library(ggplot2)  #helps visualize data
 
 setwd("E:/Capstone Project/Case Study 1 (Guided)") #sets your working directory to simplify calls to data ...
 getwd()
+load("E:/Capstone Project/Case Study 1 (Guided)/Combined Data.RData")
 
 #import data
 
@@ -160,10 +161,9 @@ no_of_users <- trips_df %>%
   count(user_type)      #counting number of distinct user types and checking if there are any null or irregular values
 View(no_of_users)
 
-
-#View(trips_df)
-#str(trips_df)
-#summary(trips_df)
+##View(trips_df)
+##str(trips_df)
+##summary(trips_df)
 
 #make a backup or v2 data frame
 
@@ -175,9 +175,47 @@ summary(v2_trips_df)
 str(trips_df)
 summary(trips_df)
 
+#remove data frames of singular months
+rm("may","jun","jul","aug","sep","oct","nov","dec","jan","feb","mar","apr")
+
 
 #PROCESSING OF DATA
 
-trips_df$day_of_week <- format(as.Date(trips_df$start_time), "%A")
-trips_df$ride_length<- difftime(trips_df$end_time, trips_df$start_time, units="mins" )
+trips_df$day_of_week <- format(as.Date(trips_df$start_time), "%A") #get the week of day of the ride
+trips_df$ride_length<- difftime(trips_df$end_time, trips_df$start_time, units="mins" ) #get the ride length
+view(trips_df[(trips_df$ride_length<0 ),]) #check for bad data i.e. if duration is negative
+all_trips <- trips_df[!(trips_df$ride_length<0),] #remove bad data found in previous step
 
+view(all_trips[(all_trips$ride_length<0 ),]) #check for bad data i.e. if duration is negative
+rm("trips_df")
+
+#Analysis of DATA
+
+#descriptive analysis
+desc_mean <- mean(all_trips$ride_length) #straight average (total ride length / rides)
+desc_median <- median(all_trips$ride_length) #midpoint number in the ascending array of ride lengths
+desc_max <- max(all_trips$ride_length) #longest ride
+desc_min <- min(all_trips$ride_length) #shortest ride
+
+summary(all_trips$ride_length)
+
+# Compare members and casual users
+agg_mean <- aggregate(all_trips$ride_length ~ all_trips$user_type, FUN = mean)
+agg_median <- aggregate(all_trips$ride_length ~ all_trips$user_type, FUN = median)
+agg_max <- aggregate(all_trips$ride_length ~ all_trips$user_type, FUN = max)
+agg_min <- aggregate(all_trips$ride_length ~ all_trips$user_type, FUN = min)
+
+
+# average ride time by each day for members vs casual users
+agg_mean_byday <- aggregate(all_trips$ride_length ~ all_trips$user_type + all_trips$day_of_week, FUN = mean)
+
+# Notice that days of the week are out of order. Let's fix that.
+agg_mean_byday <- aggregate(all_trips$ride_length ~ all_trips$user_type + ordered(all_trips$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")), FUN = mean)
+
+# analyze ridership data by type and weekday
+ridership_data <- all_trips %>% 
+  mutate(weekday = wday(start_time, label = TRUE)) %>%  #creates weekday field using wday()
+  group_by(user_type, weekday) %>%  #groups by usertype and weekday
+  summarise(number_of_rides = n()      #calculates the number of rides and average duration 
+            ,average_duration = mean(ride_length)) %>%       # calculates the average duration
+  arrange(user_type, weekday)                            # sorts
